@@ -1,47 +1,48 @@
 # Bài 5: Cơ chế In-Context Learning trong Phân loại Review Khách hàng
 ## Phần 1. Phân tích cơ chế
-In-Context Learning (ICL) là cách AI học thông qua những ví dụ và thông tin được cung cấp trong câu lệnh mà không cần phải huấn luyện lại mô hình.
+In-Context Learning (ICL) là khả năng AI học cách làm một nhiệm vụ thông qua những ví dụ được cung cấp ngay trong Prompt mà không cần train lại model hay thay đổi trọng số.
 
-Cách hoạt động khá đơn giản: Người dùng đưa cho AI một số ví dụ về câu đánh giá và kết quả phân loại đúng. AI sẽ dựa vào đó để nhận ra cách phân biệt giữa lời khen thật và lời chê mang tính mỉa mai. Sau đó, khi gặp một câu đánh giá mới, AI sẽ áp dụng những gì đã nhận biết từ các ví dụ để đưa ra kết quả.
+Cơ chế này có thể hiểu như sau: Khi người dùng đưa ra một số ví dụ gồm câu đánh giá và kết quả phân loại, AI sẽ dựa vào đó để nhận biết cách phân biệt lời khen thật với những câu nói mỉa mai. Sau đó, khi gặp một đánh giá mới, AI sẽ áp dụng những gì đã nhận ra từ các ví dụ để đưa ra kết quả.
 
-Ví dụ, câu nói máy có nhiệt độ CPU lên đến 98 độ C nhưng lại bảo không cần bật lò sưởi thực chất là đang chê máy quá nóng. Nếu chỉ nhìn vào những từ như "đẹp mê ly" hay "khỏi cần bật lò sưởi", AI rất dễ hiểu nhầm thành lời khen.
+Trong trường hợp của TechShop, câu nói máy có nhiệt độ CPU lên đến 98 độ C nhưng lại bảo không cần bật lò sưởi thực chất là đang chê máy quá nóng. Nếu chỉ nhìn vào những từ như "đẹp mê ly", "đầm tay" hay "khỏi cần bật lò sưởi", AI rất dễ hiểu nhầm đây là lời khen.
 
-Vì vậy, ICL giúp AI hiểu cách sử dụng từ ngữ trong từng tình huống tốt hơn mà không cần thay đổi trọng số của mô hình.
+Vì vậy, việc cung cấp ví dụ mẫu giúp AI hiểu được ý nghĩa thực sự của câu nói thay vì chỉ dựa vào nghĩa của từng từ riêng lẻ.
 ## Phần 2. Sửa lỗi bằng Few-shot
-### Prompt đề xuất:
-Bạn là nhân viên kiểm tra đánh giá sản phẩm của TechShop. Hãy đọc nội dung khách hàng nhận xét và phân loại thành TÍCH CỰC hoặc TIÊU CỰC.
+### Prompt Few-shot đề xuất cho TechShop:
+Bạn là nhân viên kiểm duyệt đánh giá sản phẩm của TechShop. Nhiệm vụ của bạn là đọc đánh giá của khách hàng và phân loại thành 2 loại: TÍCH CỰC hoặc TIÊU CỰC.
 
-Lưu ý: Cần đọc hiểu toàn bộ câu, không được chỉ dựa vào những từ mang ý nghĩa khen ngợi. Hãy chú ý những câu nói mỉa mai, nói quá hoặc khen nhưng thực chất là đang chê.
+Khi phân loại, cần đọc hiểu toàn bộ câu đánh giá. Không được chỉ nhìn vào những từ mang ý nghĩa khen ngợi vì khách hàng có thể đang nói mỉa mai hoặc khen đểu.
 
-**Ví dụ 1:**
+**Ví dụ 1: Về nhiệt độ máy**
 
-Input: "Máy nóng thật đấy, chơi game một lúc mà CPU lên tận 98 độ, mùa đông chắc khỏi cần máy sưởi."
-
-Output: TIÊU CỰC
-
-Lý do: Khách hàng đang chê máy quá nóng khi sử dụng.
-
-**Ví dụ 2:**
-
-Input: "Pin tốt quá, mới dùng từ sáng đến trưa đã hết sạch, đúng là không cần mang sạc theo làm gì!"
+Input: "Máy mát thật đấy, mới chơi game một lúc mà CPU đã lên 98 độ, mùa đông chắc khỏi cần bật máy sưởi."
 
 Output: TIÊU CỰC
 
-Lý do: Khách hàng đang mỉa mai vì pin nhanh hết, không sử dụng được lâu.
+Lý do: Khách hàng đang mỉa mai vì máy quá nóng khi chơi game.
 
-**Ví dụ 3:**
+**Ví dụ 2: Về thời lượng pin**
 
-Input: "Shop giao hàng nhanh thật, đặt hàng cả tuần mới nhận được, chắc shipper đi tham quan trước khi giao."
+Input: "Pin trâu quá, mới dùng buổi sáng mà đến trưa đã hết sạch, đúng là không cần mang sạc theo làm gì!"
 
 Output: TIÊU CỰC
 
-Lý do: Khách hàng không hài lòng vì thời gian giao hàng quá lâu.
+Lý do: Khách hàng đang chê pin nhanh hết, thời gian sử dụng không đáp ứng nhu cầu.
 
-**Bây giờ hãy phân loại đánh giá sau:**
+**Ví dụ 3: Về thời gian giao hàng**
+
+Input: "Shop giao hàng nhanh ghê, đặt từ tuần trước mà giờ mới nhận được, chắc shipper đi du lịch rồi mới giao."
+
+Output: TIÊU CỰC
+
+Lý do: Khách hàng đang nói mỉa mai vì thời gian giao hàng quá lâu.
+
+**Bây giờ hãy thực hiện nhiệm vụ sau:**
 
 Review: {review}
 
 Yêu cầu:
-- Kết quả: TÍCH CỰC hoặc TIÊU CỰC.
+- Phân loại đánh giá thành TÍCH CỰC hoặc TIÊU CỰC.
 - Giải thích ngắn gọn lý do phân loại.
-- Chú ý ý nghĩa thực sự của câu nói, tránh hiểu nhầm lời mỉa mai thành lời khen.
+- Chú ý những câu nói mỉa mai, nghĩa bóng hoặc tiếng lóng công nghệ.
+- Không kết luận chỉ dựa vào những từ ngữ tích cực xuất hiện trong câu.
